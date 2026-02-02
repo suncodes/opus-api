@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"opus-api/internal/middleware"
 	"opus-api/internal/service"
+	"opus-api/internal/types"
 
 	"github.com/gin-gonic/gin"
 )
@@ -93,4 +94,32 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		ID:       user.ID,
 		Username: user.Username,
 	})
+}
+
+// ChangePassword 修改密码
+func (h *AuthHandler) ChangePassword(c *gin.Context) {
+	var req types.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请求参数错误: " + err.Error()})
+		return
+	}
+
+	// 从上下文获取当前用户ID
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	// 修改密码
+	if err := h.authService.ChangePassword(userID, req.OldPassword, req.NewPassword); err != nil {
+		if err == service.ErrInvalidCredentials {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "原密码错误"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "密码修改失败"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "密码修改成功"})
 }

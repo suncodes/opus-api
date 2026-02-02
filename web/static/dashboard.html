@@ -13,6 +13,7 @@
             <h1>🚀 Opus API 管理系统</h1>
             <div class="user-menu">
                 <span id="currentUser">admin</span>
+                <button class="btn btn-secondary" onclick="showChangePasswordModal()">修改密码</button>
                 <button class="btn btn-secondary" onclick="logout()">退出</button>
             </div>
         </header>
@@ -153,6 +154,35 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" onclick="closeEditModal()">取消</button>
                         <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 修改密码弹窗 -->
+        <div id="changePasswordModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>修改密码</h2>
+                    <button class="modal-close" onclick="closeChangePasswordModal()">&times;</button>
+                </div>
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label for="oldPassword">原密码</label>
+                        <input type="password" id="oldPassword" name="old_password" placeholder="请输入原密码" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">新密码</label>
+                        <input type="password" id="newPassword" name="new_password" placeholder="请输入新密码 (至少6位)" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">确认新密码</label>
+                        <input type="password" id="confirmPassword" name="confirm_password" placeholder="请再次输入新密码" required>
+                    </div>
+                    <div class="error" id="changePasswordError" style="display: none;"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()">取消</button>
+                        <button type="submit" class="btn btn-primary">确定</button>
                     </div>
                 </form>
             </div>

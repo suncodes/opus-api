@@ -99,6 +99,7 @@ func main() {
 		authGroup.Use(middleware.AuthMiddleware(authService))
 		{
 			authGroup.GET("/auth/me", authHandler.Me)
+			authGroup.PUT("/auth/password", authHandler.ChangePassword)
 
 			// Cookie management routes
 			if cookieService != nil && cookieValidator != nil {

@@ -85,6 +85,80 @@ function logout() {
     }
 }
 
+// 显示修改密码弹窗
+function showChangePasswordModal() {
+    document.getElementById('changePasswordModal').style.display = 'flex';
+    document.getElementById('changePasswordForm').reset();
+    document.getElementById('changePasswordError').style.display = 'none';
+}
+
+// 关闭修改密码弹窗
+function closeChangePasswordModal() {
+    document.getElementById('changePasswordModal').style.display = 'none';
+}
+
+// 修改密码
+async function changePassword(oldPassword, newPassword) {
+    try {
+        const response = await apiRequest('/api/auth/password', {
+            method: 'PUT',
+            body: JSON.stringify({
+                old_password: oldPassword,
+                new_password: newPassword
+            })
+        });
+        
+        if (response.ok) {
+            showToast('密码修改成功', 'success');
+            closeChangePasswordModal();
+            return true;
+        } else {
+            const data = await response.json();
+            return { error: data.error || '密码修改失败' };
+        }
+    } catch (error) {
+        console.error('修改密码错误:', error);
+        return { error: '网络错误，请重试' };
+    }
+}
+
+// 设置修改密码表单
+function setupChangePasswordForm() {
+    const form = document.getElementById('changePasswordForm');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorDiv = document.getElementById('changePasswordError');
+            
+            // 验证新密码长度
+            if (newPassword.length < 6) {
+                errorDiv.textContent = '新密码至少需要6位字符';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // 验证两次密码是否一致
+            if (newPassword !== confirmPassword) {
+                errorDiv.textContent = '两次输入的密码不一致';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            const result = await changePassword(oldPassword, newPassword);
+            if (result === true) {
+                // 成功
+            } else if (result && result.error) {
+                errorDiv.textContent = result.error;
+                errorDiv.style.display = 'block';
+            }
+        });
+    }
+}
+
 // API 请求封装
 async function apiRequest(url, options = {}) {
     const headers = {
@@ -116,6 +190,7 @@ async function apiRequest(url, options = {}) {
 
 // 加载 Dashboard
 async function loadDashboard() {
+    setupChangePasswordForm();
     await loadUserInfo();
     await loadStats();
     await loadCookies();

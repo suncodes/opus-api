@@ -158,3 +158,33 @@ func hashToken(token string) string {
 func (s *AuthService) CleanExpiredSessions() error {
 	return s.db.Where("expires_at < ?", time.Now()).Delete(&model.UserSession{}).Error
 }
+
+// ChangePassword 修改用户密码
+func (s *AuthService) ChangePassword(userID uint, oldPassword, newPassword string) error {
+	var user model.User
+
+	// 查找用户
+	if err := s.db.First(&user, userID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrUserNotFound
+		}
+		return err
+	}
+
+	// 验证旧密码
+	if !user.CheckPassword(oldPassword) {
+		return ErrInvalidCredentials
+	}
+
+	// 设置新密码
+	if err := user.SetPassword(newPassword); err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// 保存到数据库
+	if err := s.db.Save(&user).Error; err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	return nil
+}
