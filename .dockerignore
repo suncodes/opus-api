@@ -1,0 +1,50 @@
+# Git 相关
+.git
+.gitignore
+.gitattributes
+
+# 构建产物
+*.tar
+*.exe
+server
+opus-api
+
+# 开发和测试文件
+test/
+*_test.go
+一个完整的任务日志/
+
+# 日志和临时文件
+*.log
+logs/
+client_response.txt
+
+# 编辑器和 IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 构建脚本（不需要在容器中）
+build.sh
+
+# Node.js（如果有的话）
+node_modules/
+npm-debug.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+ENV/
+
+# 文档（在 Dockerfile 中会单独复制需要的）
+*.md
+!README.md

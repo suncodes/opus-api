@@ -20,18 +20,29 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/server
 
 # Run stage
-FROM alpine:latest
+FROM python:3.9-slim
 
 WORKDIR /app
+
+# Install any system dependencies if needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy binary from builder
 COPY --from=builder /app/server .
 
+# Copy Python startup script
+COPY app.py .
+
 # Create logs directory
 RUN mkdir -p /app/logs
 
-# Expose port
-EXPOSE 3002
+# Hugging Face Spaces uses port 7860
+EXPOSE 7860
 
-# Run server
-CMD ["./server"]
+# Set environment variable
+ENV PORT=7860
+
+# Run server via Python script
+CMD ["python", "app.py"]

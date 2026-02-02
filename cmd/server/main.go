@@ -39,9 +39,13 @@ func main() {
 	router.GET("/health", handler.HandleHealth)
 
 	// Start server
-	port := 3002
-	addr := fmt.Sprintf(":%d", port)
-	log.Printf("Server running on http://localhost:%d", port)
+	// Hugging Face Spaces uses port 7860
+	port := 7860
+	if envPort := os.Getenv("PORT"); envPort != "" {
+		fmt.Sscanf(envPort, "%d", &port)
+	}
+	addr := fmt.Sprintf("0.0.0.0:%d", port)
+	log.Printf("Server running on http://0.0.0.0:%d", port)
 	log.Printf("Debug mode: %v", types.DebugMode)
 	log.Printf("Log directory: %s", types.LogDir)
 
