@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opus API 管理系统 - Cookie 管理</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <h1>🚀 Opus API 管理系统</h1>
+            <div class="user-menu">
+                <span id="currentUser">admin</span>
+                <button class="btn btn-secondary" onclick="logout()">退出</button>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 统计卡片 -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <h3 id="totalCount">0</h3>
+                            <p>总账号数</p>
+                        </div>
+                    </div>
+                    <div class="stat-card valid">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <h3 id="validCount">0</h3>
+                            <p>有效账号</p>
+                        </div>
+                    </div>
+                    <div class="stat-card invalid">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-info">
+                            <h3 id="invalidCount">0</h3>
+                            <p>无效账号</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-info">
+                            <h3 id="totalUsage">0</h3>
+                            <p>总请求数</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 操作按钮 -->
+            <section class="actions-section">
+                <button class="btn btn-primary" onclick="showAddModal()">
+                    ➕ 添加 Cookie
+                </button>
+                <button class="btn btn-secondary" onclick="validateAll()">
+                    🔄 批量验证
+                </button>
+                <button class="btn btn-secondary" onclick="refreshCookies()">
+                    🔃 刷新列表
+                </button>
+            </section>
+
+            <!-- Cookie 列表 -->
+            <section class="table-section">
+                <h2>Cookie 列表</h2>
+                <div class="table-container">
+                    <table id="cookieTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>名称</th>
+                                <th>状态</th>
+                                <th>使用次数</th>
+                                <th>优先级</th>
+                                <th>最后验证</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cookieTableBody">
+                            <!-- 动态填充 -->
+                        </tbody>
+                    </table>
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <p>暂无 Cookie，点击上方按钮添加</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 添加 Cookie 弹窗 -->
+        <div id="addModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>添加 Morph Cookie</h2>
+                    <button class="modal-close" onclick="closeAddModal()">&times;</button>
+                </div>
+                <form id="addCookieForm">
+                    <div class="form-group">
+                        <label for="cookieName">账号名称</label>
+                        <input type="text" id="cookieName" name="name" placeholder="例如：主账号" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="apiKey">API Key</label>
+                        <input type="text" id="apiKey" name="api_key" placeholder="输入 API Key..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sessionKey">Session Key (可选)</label>
+                        <input type="text" id="sessionKey" name="session_key" placeholder="输入 Session Key...">
+                    </div>
+                    <div class="form-group">
+                        <label for="cookiePriority">优先级 (0-100)</label>
+                        <input type="number" id="cookiePriority" name="priority" value="0" min="0" max="100">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeAddModal()">取消</button>
+                        <button type="submit" class="btn btn-primary">确定</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 编辑 Cookie 弹窗 -->
+        <div id="editModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>编辑 Cookie</h2>
+                    <button class="modal-close" onclick="closeEditModal()">&times;</button>
+                </div>
+                <form id="editCookieForm">
+                    <input type="hidden" id="editCookieId">
+                    <div class="form-group">
+                        <label for="editCookieName">账号名称</label>
+                        <input type="text" id="editCookieName" name="name" placeholder="例如：主账号">
+                    </div>
+                    <div class="form-group">
+                        <label for="editApiKey">API Key</label>
+                        <input type="text" id="editApiKey" name="api_key" placeholder="输入 API Key...">
+                    </div>
+                    <div class="form-group">
+                        <label for="editSessionKey">Session Key (可选)</label>
+                        <input type="text" id="editSessionKey" name="session_key" placeholder="输入 Session Key...">
+                    </div>
+                    <div class="form-group">
+                        <label for="editCookiePriority">优先级 (0-100)</label>
+                        <input type="number" id="editCookiePriority" name="priority" min="0" max="100">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">取消</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toast 通知 -->
+        <div id="toast" class="toast" style="display: none;"></div>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+</html>

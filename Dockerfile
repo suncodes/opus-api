@@ -35,6 +35,9 @@ COPY --from=builder /app/server .
 # Copy Python startup script
 COPY app.py .
 
+# Copy web static files
+COPY --from=builder /app/web ./web
+
 # Create logs directory
 RUN mkdir -p /app/logs
 

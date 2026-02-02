@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"opus-api/internal/converter"
 	"opus-api/internal/logger"
+	"opus-api/internal/model"
 	"opus-api/internal/stream"
 	"opus-api/internal/tokenizer"
 	"opus-api/internal/types"
@@ -32,6 +33,17 @@ func HandleMessages(c *gin.Context) {
 	var claudeReq types.ClaudeRequest
 	if err := c.ShouldBindJSON(&claudeReq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+		return
+	}
+
+	// 验证模型是否支持
+	if claudeReq.Model == "" {
+		claudeReq.Model = types.DefaultModel
+	}
+	if !types.IsModelSupported(claudeReq.Model) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("Model '%s' is not supported. Supported models: %v", claudeReq.Model, types.SupportedModels),
+		})
 		return
 	}
 
@@ -64,7 +76,29 @@ func HandleMessages(c *gin.Context) {
 	}
 
 	// Set headers
+	headers := make(map[string]string)
 	for key, value := range types.MorphHeaders {
+		headers[key] = value
+	}
+
+	// 如果启用了 Cookie 轮询器，使用轮询的 Cookie
+	if types.CookieRotatorInstance != nil {
+		cookieInterface, err := types.CookieRotatorInstance.NextCookie()
+		if err == nil && cookieInterface != nil {
+			// 类型断言为 *model.MorphCookie
+			if cookie, ok := cookieInterface.(*model.MorphCookie); ok {
+				headers["cookie"] = cookie.APIKey
+				log.Printf("[INFO] Using rotated cookie (ID: %d, Priority: %d)", cookie.ID, cookie.Priority)
+			} else {
+				log.Printf("[WARN] Cookie type assertion failed, using default")
+			}
+		} else {
+			log.Printf("[WARN] Failed to get rotated cookie: %v, using default", err)
+		}
+	}
+
+	// 应用所有请求头
+	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
 
